@@ -16,6 +16,7 @@ class TravelNews(models.Model):
     image_url = models.URLField(blank=True, null=True)
     category = models.CharField(max_length=255, blank=True, null=True)
     read_time = models.IntegerField(blank=True, null=True)
+    
     def __str__(self):
         return {self.title, self.published_date, self.category, self.read_time, self.image_url, self.link}
     

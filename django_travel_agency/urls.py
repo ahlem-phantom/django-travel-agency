@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from home import views  # Make sure you import the homepage view
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +28,11 @@ urlpatterns = [
     path('api/invoices/', include('invoices.urls')),  # Include URLs from the invoices app
     path('api/support/', include('support.urls')),    # Include URLs from the support app
     path('api/news/', include('news.urls')),          # Include URLs from the news app
+    path('api/trips/', include('trips.urls')),        # Include URLs from the trips app
+    #path('api/accounts/', include('accounts.urls')),  # Include URLs from the accounts app
 ]
+
+
+# Add this for media file handling
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

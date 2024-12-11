@@ -1,0 +1,151 @@
+{% block content %}
+<h1 class="form-title">{% if form.instance.pk %}Edit{% else %}Create{% endif %} Travel Package</h1>
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="package-form">
+        {% csrf_token %}
+        
+        <!-- Form Fields -->
+        <div class="form-field">
+            <label for="id_title">Package Title</label>
+            {{ form.title }}
+        </div>
+
+        <div class="form-field">
+            <label for="id_destination">Destination</label>
+            {{ form.destination }}
+        </div>
+
+        <div class="form-field">
+            <label for="id_description">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div class="form-field">
+            <label for="id_image">Image</label>
+            {{ form.image }}
+        </div>
+        
+        <div class="form-field">
+            <label for="id_start_date">Start Date</label>
+            {{ form.start_date }}
+
+            <label for="id_end_date">End Date</label>
+            {{ form.end_date }}
+
+        </div>
+
+        <div class="form-field">
+            <label for="id_tags">Tags</label>
+            {{ form.tags }}
+        </div>
+        
+        <div class="form-field">
+            <label for="id_price">Price</label>
+            {{ form.price }}
+        </div>
+
+        <div class="form-action">
+            <button type="submit" class="submit-btn">Save</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* General page styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-title {
+        text-align: center;
+        padding: 20px;
+        background-color: #4CAF50;
+        color: white;
+        margin: 0;
+        font-size: 2em;
+        text-transform: uppercase;
+    }
+
+    .form-container {
+        max-width: 800px;
+        margin: 30px auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .package-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-field {
+        margin-bottom: 15px;
+    }
+
+    .form-field label {
+        display: block;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .form-field input, .form-field textarea, .form-field select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 1em;
+        color: #333;
+    }
+
+    .form-field textarea {
+        resize: vertical;
+    }
+
+    .form-action {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .submit-btn {
+        padding: 12px 24px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.2em;
+        cursor: pointer;
+    }
+
+    .submit-btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 15px;
+        }
+
+        .form-title {
+            font-size: 1.8em;
+        }
+
+        .form-field input, .form-field textarea {
+            font-size: 0.9em;
+        }
+
+        .submit-btn {
+            font-size: 1em;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% block content %}
+<div class="package-detail-container">
+    <h1 class="package-title">{{ package.title }}</h1>
+    
+    <div class="package-image">
+        {% if package.image %}
+            <img src="/media/{{ package.image }}" alt="{{ package.title }}" class="package-img">
+        {% else %}
+            <p>No image available</p>
+        {% endif %}
+    </div>
+
+    <div class="package-info">
+        <p><strong>Description:</strong> {{ package.description }}</p>
+        <p><strong>Destination:</strong> {{ package.destination }}</p>
+        <p><strong>Price:</strong> ${{ package.price }}</p>
+        <p><strong>Start Date:</strong> {{ package.start_date }}</p>
+        <p><strong>End Date:</strong> {{ package.end_date }}</p>
+    </div>
+
+    <div class="package-actions">
+        <a href="{% url 'trips:package_update' package.id %}" class="action-btn edit-btn">Edit</a>
+
+        <form action="{% url 'trips:package_delete' package.id %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="action-btn delete-btn">Delete</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* General page styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .package-detail-container {
+        max-width: 900px;
+        margin: 30px auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .package-title {
+        text-align: center;
+        color: #333;
+        font-size: 2em;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .package-img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .package-info {
+        margin-bottom: 20px;
+        font-size: 1.1em;
+    }
+
+    .package-info p {
+        margin: 10px 0;
+    }
+
+    .package-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .action-btn {
+        padding: 10px 20px;
+        text-decoration: none;
+        color: white;
+        border-radius: 5px;
+        font-size: 1.1em;
+    }
+
+    .edit-btn {
+        background-color: #4CAF50;
+    }
+
+    .edit-btn:hover {
+        background-color: #45a049;
+    }
+
+    .delete-btn {
+        background-color: #f44336;
+        border: none;
+        cursor: pointer;
+    }
+
+    .delete-btn:hover {
+        background-color: #d32f2f;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .package-detail-container {
+            padding: 15px;
+        }
+
+        .package-title {
+            font-size: 1.6em;
+        }
+
+        .package-info {
+            font-size: 1em;
+        }
+
+        .action-btn {
+            font-size: 1em;
+        }
+    }
+</style>
+{% endblock %}

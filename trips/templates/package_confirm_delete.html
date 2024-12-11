@@ -1,0 +1,9 @@
+{% block content %}
+<h1>Delete Package</h1>
+<p>Are you sure you want to delete "{{ package.title }}"?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+</form>
+<a href="{% url 'trips:package_list' %}">Cancel</a>
+{% endblock %}

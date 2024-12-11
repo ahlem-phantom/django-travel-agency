@@ -44,9 +44,11 @@ INSTALLED_APPS = [
     'support',   # Register the support app
     'news',      # Register the news app
     'home',      # Register the home app
+    'trips',     # Register the trips app
+    'accounts',  # Register the accounts app
     'rest_framework',  # Register the Django REST framework    
     'django_filters',
-    'django_celery_beat'
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -177,3 +179,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your-email@gmail.com'
 EMAIL_HOST_PASSWORD = 'your-email-password'
+
+
+# Media settings
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
