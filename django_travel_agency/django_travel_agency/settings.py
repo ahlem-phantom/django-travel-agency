@@ -128,11 +128,9 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
-# Celery settings
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'  # RabbitMQ URL
-CELERY_RESULT_BACKEND = 'rpc://'  # For storing task results
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+# Celery Configuration
+CELERY_BROKER_URL = 'amqp://localhost'  # Use RabbitMQ as the message broker
+CELERY_ACCEPT_CONTENT = ['json']  # Accepted content types for tasks
+CELERY_TASK_SERIALIZER = 'json'  # Task data serialization format
+CELERY_RESULT_BACKEND = 'rpc://'  # Use RPC (Remote Procedure Call) for result backend
+CELERY_TIMEZONE = 'UTC'  # Use UTC time zone
