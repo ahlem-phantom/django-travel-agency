@@ -1,9 +1,0 @@
-Django>=4.2
-djangorestframework
-celery
-django-celery-results
-psycopg2-binary  
-weasyprint  
-beautifulsoup4  
-requests  
-redis

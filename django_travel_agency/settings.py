@@ -76,12 +76,8 @@ WSGI_APPLICATION = 'django_travel_agency.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'travel_agency_db',  # Your database name
-        'USER': 'root',      # Your MySQL user
-        'PASSWORD': '',  # Your MySQL password
-        'HOST': 'localhost',        # Database server (localhost if MySQL is local)
-        'PORT': '3306',             # Default MySQL port
+        'ENGINE': 'django.db.backends.sqlite3',  # Use SQLite backend
+        'NAME': BASE_DIR / 'db.sqlite3',          # Path to the SQLite database file
     }
 }
 
@@ -136,3 +132,12 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'
