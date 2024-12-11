@@ -32,14 +32,14 @@ def package_detail(request, pk):
 # Create a new trips package
 def package_create(request):
     if request.method == 'POST':
-        form = TravelPackageForm(request.POST, request.FILES)  # Ensure the form is handling file uploads
+        form = TravelPackageForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('trips:package_list')
+            form.save()  # Save the new package
+            return redirect('trips:package_list')  # Redirect to the package list after saving
     else:
-        form = TravelPackageForm()
+        form = TravelPackageForm()  # Provide an empty form to the user
+    
     return render(request, 'package_form.html', {'form': form})
-
 # Update an existing trips package
 def package_update(request, pk):
     package = get_object_or_404(TravelPackage, pk=pk)
@@ -61,16 +61,21 @@ def package_delete(request, pk):
     return render(request, 'package_confirm_delete.html', {'package': package})
 
 
-# View for displaying the trip details
-def trip_detail(request, trip_id):
+def rate_trip(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
-    
+
     # Check if the user has already rated this trip
     existing_rating = Rating.objects.filter(user=request.user, trip=trip).first()
     
-    # Display the trip details with rating options
-    return render(request, 'trip_detail.html', {
-        'trip': trip,
-        'existing_rating': existing_rating,
-        'form': RatingForm()  # Rating form for new users to rate
-    })
+    if request.method == 'POST':
+        if existing_rating:
+            # Update existing rating
+            existing_rating.rating = request.POST['rating']
+            existing_rating.save()
+        else:
+            # Create a new rating
+            rating = Rating(user=request.user, trip=trip, rating=request.POST['rating'])
+            rating.save()
+        return redirect('trip_detail', trip_id=trip.id)
+    
+    return render(request, 'rate_trip.html', {'trip': trip, 'existing_rating': existing_rating})

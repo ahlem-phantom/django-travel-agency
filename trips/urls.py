@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RecommendationView, package_list, package_detail, package_create, package_update, package_delete
+from .views import RecommendationView, package_list, package_detail, package_create, package_update, package_delete, rate_trip
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -13,7 +13,7 @@ urlpatterns = [
     path('create/', package_create, name='package_create'),
     path('<int:pk>/update/', package_update, name='package_update'),
     path('<int:pk>/delete/', package_delete, name='package_delete'),
-    path('trip/rate/<int:trip_id>/', views.rate_trip, name='rate_trip'),  # Rate trip
+    path('trip/rate/<int:trip_id>/', rate_trip, name='rate_trip'),  # Rate trip
 ]
 
 
