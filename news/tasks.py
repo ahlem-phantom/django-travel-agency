@@ -2,18 +2,10 @@ from celery import shared_task
 import requests
 from bs4 import BeautifulSoup
 from .models import NewsArticle
+from .scraper import scrape_travel_news
+from django.http import JsonResponse
 
 @shared_task
-def scrape_news():
-    url = "https://example.com/news"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    # Assuming the news is in <article> tags
-    articles = soup.find_all('article')
-
-    for article in articles:
-        title = article.find('h2').get_text()
-        content = article.find('p').get_text()
-
-        # Save the scraped news in the database
-        NewsArticle.objects.create(title=title, content=content, published_on=timezone.now())
+def scrape_travel_news_task(request):
+    scrape_travel_news().apply_async()
+    return JsonResponse({"status": "Scraping task has been triggered!"})

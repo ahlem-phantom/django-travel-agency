@@ -1,9 +1,10 @@
-# news/urls.py
-
 from django.urls import path
-from . import views
+from .views import index, TravelNewsListView
+from .views import trigger_scraping, display_travel_news
 
 urlpatterns = [
-    # Define URL patterns for the news app here
-    path('', views.index, name='index'),  # Example view
+    path('', TravelNewsListView.as_view(), name='news-list'),  # API for listing news
+    path('trigger-scraping/', trigger_scraping, name='trigger_scraping'),
+    path('travel-news/', display_travel_news, name='travel_news_list'),
+
 ]

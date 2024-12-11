@@ -1,3 +1,5 @@
-from django.shortcuts import render
+# home/views.py
+from django.http import HttpResponse
 
-# Create your views here.
+def homepage(request):
+    return HttpResponse("Welcome to the Travel Agency!")
