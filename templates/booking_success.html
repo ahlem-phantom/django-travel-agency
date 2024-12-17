@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'topbar.html' %}
+
+<div class="container-fluid py-5" style="object-fit: cover;">
+    <div class="container py-5 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <!-- Icon -->
+                <i class="bi bi-check-circle display-1 text-success"></i>
+                
+                <!-- Success Message -->
+                <h1 class="display-1 text-success">Success</h1>
+                <h1 class="mb-4 text-dark">Trip Booked Successfully!</h1>
+                
+                <!-- Description -->
+                <p class="mb-4 text-dark">Thank you for booking your trip with us. Your booking has been confirmed. You will receive an email with all the details shortly.</p>
+                
+                <!-- Call to Action Button -->
+                <a class="btn btn-success rounded-pill py-3 px-5" href="{% url 'home-index' %}">Go Back To Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'chatbot.html' %}
+
+{% include 'footer.html' %}
+
+{% endblock %}

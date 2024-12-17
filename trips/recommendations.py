@@ -1,5 +1,7 @@
+'''
 import numpy as np
 from .models import TravelPackage
+
 
 def calculate_recommendations(user_preferences):
     if not user_preferences:
@@ -21,3 +23,4 @@ def calculate_recommendations(user_preferences):
     # Sort by score (highest first) and return
     recommendations.sort(key=lambda x: x[1], reverse=True)
     return [package for package, score in recommendations[:5]]  # Top 5 packages
+'''

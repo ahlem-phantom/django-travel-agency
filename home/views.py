@@ -1,5 +1,6 @@
 # home/views.py
 from django.http import HttpResponse
+from django.shortcuts import render
 
-def homepage(request):
-    return HttpResponse("Welcome to the Travel Agency!")
+def index(request):
+    return render(request, 'index.html')  # Path to your template

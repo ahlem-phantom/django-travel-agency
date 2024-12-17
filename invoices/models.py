@@ -1,5 +1,5 @@
 from django.db import models
-from bookings.models import Booking
+from packages.models import Booking
 
 class Invoice(models.Model):
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE)

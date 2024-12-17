@@ -39,13 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bookings',  # Register the bookings app
-    'invoices',  # Register the invoices app
+     'django_celery_results',
+   # 'invoices',  # Register the invoices app
     'support',   # Register the support app
     'news',      # Register the news app
     'home',      # Register the home app
-    'trips',     # Register the trips app
+    #'trips',     # Register the trips app
     'accounts',  # Register the accounts app
+    'packages',  # Register the packages app
     'rest_framework',  # Register the Django REST framework    
     'django_filters',
     'django_celery_beat',
@@ -66,7 +67,9 @@ ROOT_URLCONF = 'django_travel_agency.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',  # This points to the global templates folder
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,6 +81,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'django_travel_agency.wsgi.application'
 
@@ -165,7 +169,7 @@ BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/'
 
 # Celery settings
 CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'  # RabbitMQ URL
-CELERY_RESULT_BACKEND = 'rpc://'  # For storing task results
+CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -174,13 +178,21 @@ CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_LOG_LEVEL = 'INFO'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.office365.com'  # Correct SMTP server for Outlook
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-email-password'
-
+EMAIL_HOST_USER = 'travelatrips.reply@outlook.com'
+EMAIL_HOST_PASSWORD = 'iglnknwiwbpksyhm'
+DEFAULT_FROM_EMAIL = 'travelatrips.reply@outlook.com'
 
 # Media settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_URL = '/static/'
+# Define where static files are collected
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Path to the global static folder
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For `collectstatic`

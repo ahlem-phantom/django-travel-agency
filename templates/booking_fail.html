@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'topbar.html' %}
+
+<div class="container-fluid py-5" style="object-fit: cover;">
+    <div class="container py-5 text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <!-- Icon -->
+                <i class="bi bi-x-circle display-1 text-danger"></i>
+                
+                <!-- Failed Message -->
+                <h1 class="display-1 text-danger">Failed</h1>
+                <h1 class="mb-4 text-dark">Something Went Wrong</h1>
+                
+                <!-- Description -->
+                <p class="mb-4 text-dark">Unfortunately, your trip booking could not be processed. Please try again later or contact our support team if the issue persists.</p>
+                
+                <!-- Call to Action Button -->
+                <a class="btn btn-danger rounded-pill py-3 px-5" href="{% url 'home-index' %}">Go Back To Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'chatbot.html' %}
+
+{% include 'footer.html' %}
+
+{% endblock %}

@@ -23,12 +23,13 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.homepage, name='homepage'),  # This maps the root URL to the homepage view
-    path('api/bookings/', include('bookings.urls')),  # Include URLs from the bookings app
-    path('api/invoices/', include('invoices.urls')),  # Include URLs from the invoices app
+    path('', include('home.urls')),  # Include URLs from the home app
+    path('packages/', include('packages.urls')),  # Include URLs from the packages app
+    path('news/', include('news.urls')),     
+    #path('api/invoices/', include('invoices.urls')),  # Include URLs from the invoices app
     path('api/support/', include('support.urls')),    # Include URLs from the support app
-    path('api/news/', include('news.urls')),          # Include URLs from the news app
-    path('api/trips/', include('trips.urls')),        # Include URLs from the trips app
+    #path('api/trips/', include('trips.urls')),        # Include URLs from the trips app
+    path('api/support/', include('support.urls')),        # Include URLs from the support app
     #path('api/accounts/', include('accounts.urls')),  # Include URLs from the accounts app
 ]
 

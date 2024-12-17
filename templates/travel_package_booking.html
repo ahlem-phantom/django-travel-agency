@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'topbar.html' %}
+
+<div id="book" class="container-fluid booking py-5">
+    <div class="container py-5">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <h5 class="section-booking-title pe-3">Booking</h5>
+                <h1 class="text-white mb-4"> {{ package.name }} Trip</h1>
+                <div class="packages-item bg-light">
+                    <div class="packages-img">
+                        {% load static %}
+                        <img src="/media/{{ package.image }}" class="img-fluid w-100 rounded-top" alt="Image">
+                        <div class="packages-info d-flex border border-start-0 border-end-0 " style="width: 100%; bottom: 0; left: 0; z-index: 5;">
+                            <small class="flex-fill text-center border-end py-2"><i class="fa fa-map-marker-alt me-2"></i>{{ package.destination }}</small>
+                            <small class="flex-fill text-center border-end py-2"><i class="fa fa-calendar-alt me-2"></i>{{ package.duration }}</small>
+                            <small class="flex-fill text-center py-2"><i class="fa fa-user me-2"></i>{% if package.available %}Available{% else %}Not Available{% endif %}</small>
+                        </div>
+                    </div>
+                    <div class="packages-content">
+                        <div class="p-4 pb-0">
+                            <h5 class="mb-0">{{ package.name }}</h5>                                                 
+                            <p class="mb-4">{{ package.description|truncatewords:20 }}</p>
+                            <br/>
+                        </div>
+               
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h5 class="section-booking-title pe-3">Your Infos</h5>
+
+                <h1 class="text-white mb-3">Book A Tour Deals</h1>
+                <p class="text-white mb-4">Get <span class="text-warning">50% Off</span> On Your First Adventure Trip With Travela. Get More Deals Here.</p>
+                <form method="post" action="{% url 'booking_handler_view' package_id=package.id %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-white border-0 {% if errors.name %}is-invalid{% endif %}" value="{{ name }}" id="name" name="name" placeholder="Your Name">
+                                {% if errors.name %}
+                                    <div class="error text-danger">{{ errors.name }}</div>
+                                {% endif %}
+                                <label for="name">Your Name</label>
+                            </div>
+                            
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="email" class="form-control bg-white border-0 {% if errors.email %}is-invalid{% endif %}" id="email" name="email" placeholder="Your Email" value="{{ email }}">
+                                {% if errors.email %}
+                                    <div class="error text-danger">{{ errors.email }}</div>
+                                {% endif %}
+                                <label for="email">Your Email</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-floating date" id="date3" data-target-input="nearest">
+                                <input type="date" class="form-control bg-white border-0 {% if errors.booking_date %}is-invalid{% endif %}" id="datetime" name="datetime" placeholder="Date & Time" value="{{ booking_date }}" data-target="#date3" data-toggle="datetimepicker" />
+                                {% if errors.booking_date %}
+                                    <div class="error text-danger">{{ errors.booking_date }}</div>
+                                {% endif %}
+                                <label for="datetime">Date & Time</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select bg-white border-0 {% if errors.gender %}is-invalid{% endif %}" id="SelectGender" name="SelectGender">
+                                    <option value="Male" {% if SelectGender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if SelectGender == 'Female' %}selected{% endif %}>Female</option>
+                                </select>
+                                {% if errors.gender %}
+                                    <div class="error text-danger">{{ errors.gender }}</div>
+                                {% endif %}
+                                <label for="SelectGender">Gender</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select bg-white border-0 {% if errors.num_adults %}is-invalid{% endif %}" id="SelectPerson" name="SelectPerson">
+                                    <option value="1" {% if num_adults == 1 %}selected{% endif %}>1 Person</option>
+                                    <option value="2" {% if num_adults == 2 %}selected{% endif %}>2 Persons</option>
+                                    <option value="3" {% if num_adults == 3 %}selected{% endif %}>3 Persons</option>
+                                    <option value="4" {% if num_adults == 4 %}selected{% endif %}>4 Persons</option>
+                                </select>
+                                {% if errors.num_adults %}
+                                    <div class="error text-danger">{{ errors.num_adults }}</div>
+                                {% endif %}
+                                <label for="SelectPerson">Persons</label>
+                            </div>
+                        </div>
+                        
+                   <!-- Kids -->
+            <!-- Kids -->
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <select class="form-select bg-white border-0 {% if errors.num_children %}is-invalid{% endif %}" id="SelectKids" name="SelectKids">
+                        <option value="0" {% if num_children == 0 %}selected{% endif %}>No Kids</option>
+                        <option value="1" {% if num_children == 1 %}selected{% endif %}>1 Kid</option>
+                        <option value="2" {% if num_children == 2 %}selected{% endif %}>2 Kids</option>
+                        <option value="3" {% if num_children == 3 %}selected{% endif %}>3 Kids</option>
+                    </select>
+                    {% if errors.num_children %}
+                        <div class="error text-danger">{{ errors.num_children }}</div>
+                    {% endif %}
+                    <label for="SelectKids">Kids</label>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-floating bg-white">
+                    <select class="form-select border-0 {% if errors.payment_method %}is-invalid{% endif %}" id="payment_method" name="payment_method" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="On Site" {% if payment_method == 'On Site' %}selected{% endif %}>On Site</option>
+                        <option value="Online" {% if payment_method == 'Online' %}selected{% endif %}>Online</option>
+                    </select>
+                    {% if errors.payment_method %}
+                        <div class="error text-danger">{{ errors.payment_method }}</div>
+                    {% endif %}
+                    <label for="payment_method">Payment Method</label>
+                </div>
+            </div>
+            
+                        <div class="col-12">
+                            <div class="packages-content bg-light">
+                                <div class="p-4 pb-0">
+                                    <!-- Unit Price Display -->
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Unit Price</h5>
+                                    <small 
+                                        id="unit-price" 
+                                        class="mb-3" 
+                                        style="text-transform: uppercase; font-weight: bold; color: #fff; background-color: #13357B; padding: 5px 15px; border-radius: 20px; font-size: 0.875em;">
+                                        {{ package.price }} TND
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Total Price Display -->
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Total Price</h5>
+                                    <small 
+                                        id="total-price" 
+                                        class="mb-3" 
+                                        style="text-transform: uppercase; font-weight: bold; color: #fff; background-color: #13357B; padding: 5px 15px; border-radius: 20px; font-size: 0.875em;">
+                                        {{ package.price }} TND
+                                    </small>
+                                </div>
+                            </div>
+
+
+
+                                                                             
+                                    <br/>
+                                   <!-- Payment Icons Section -->
+                                    <div class="col-12" id="payment-icons" style="display: none;">
+                                        <div class="packages-content bg-light">
+                                            <h4 class="mb-3">Payment Methods</h4>
+                                            <div class="footer-bank-card mb-3" style="display: flex; gap: 10px;">
+                                                <img src="/static/img/download.png" class="img-fluid w-25 rounded-top" alt="Image" />
+                                                <i class="fab fa-cc-visa fa-2x text-dark"></i>
+                                                <i class="fas fa-credit-card fa-2x text-dark"></i>
+                                                <i class="fab fa-cc-mastercard fa-2x text-dark"></i>
+                                                <i class="fab fa-cc-paypal fa-2x text-dark"></i>
+                                                <i class="fab fa-cc-discover fa-2x text-dark"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                <!-- Due Date Section -->
+                                <div class="col-12" id="due-date-section" style="display: none; margin-top: -30px;">
+                                    <div class="alert alert-info mt-3" role="alert" style="font-size: 1rem;">
+                                        Please make your payment within <strong>10 days</strong> from today in <span id="due-date-display" style="font-weight: bold;">Travela's agency.</span>
+                                    </div>
+                                </div>
+<!-- Consent Checkbox -->
+<div class="col-12 mt-3">
+    <div class="form-check">
+        <input class="form-check-input {% if errors.consent %}is-invalid{% endif %}" type="checkbox" id="consent-checkbox" name="consent" required />
+        {% if errors.consent %}
+            <div class="error text-danger">{{ errors.consent }}</div>
+        {% endif %}
+        <label class="form-check-label" for="consent-checkbox">
+            I have read and agree to the <a href="#" target="_blank">terms and conditions</a>.
+        </label>
+    </div>
+</div>
+
+                                                <br/>
+
+                         </div>
+                       
+                            </div>
+                        </div>
+                        {% if messages %}
+                        <div class="alert alert-danger">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                        <div class="col-12">
+                            <button class="btn btn-primary text-white w-100 py-3" type="submit">Book Now</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const unitPriceElement = document.getElementById('unit-price'); 
+    const totalPriceElement = document.getElementById('total-price'); 
+    const personsSelect = document.getElementById('SelectPerson'); 
+    const childrenSelect = document.getElementById('SelectKids'); 
+
+    const unitPrice = parseFloat(unitPriceElement.textContent.trim());
+    const childDiscount = 0.5; // 50% discount for children
+
+    function calculateTotalPrice() {
+        const numberOfPersons = parseInt(personsSelect.value);
+        const numberOfChildren = parseInt(childrenSelect.value);
+
+        const adultsPrice = unitPrice * numberOfPersons;
+        const childrenPrice = (unitPrice * childDiscount) * numberOfChildren;
+
+        const totalPrice = adultsPrice + childrenPrice;
+
+        totalPriceElement.textContent = totalPrice.toFixed(2) + " TND";
+    }
+
+    personsSelect.addEventListener('change', calculateTotalPrice);
+    childrenSelect.addEventListener('change', calculateTotalPrice);
+});
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const paymentMethodSelect = document.getElementById('payment_method');
+    const paymentIconsSection = document.getElementById('payment-icons');
+    const dueDateSection = document.getElementById('due-date-section');
+
+    // Function to toggle sections based on payment method
+    function togglePaymentOptions() {
+        const selectedMethod = paymentMethodSelect.value;
+
+        if (selectedMethod === 'Online') {
+            paymentIconsSection.style.display = 'block'; // Show Payment Methods
+            dueDateSection.style.display = 'none';      // Hide Due Date
+        } else if (selectedMethod === 'On Site') {
+            paymentIconsSection.style.display = 'none'; // Hide Payment Methods
+            dueDateSection.style.display = 'block';     // Show Due Date
+        } else {
+            paymentIconsSection.style.display = 'none'; // Hide both if no selection
+            dueDateSection.style.display = 'none';
+        }
+    }
+
+    // Add event listener for dropdown changes
+    paymentMethodSelect.addEventListener('change', togglePaymentOptions);
+
+    // Initialize on page load
+    togglePaymentOptions();
+});
+</script>
+
+{% include 'chatbot.html' %}
+
+{% include 'footer.html' %}
+
+{% endblock %}

@@ -1,3 +1,4 @@
+'''
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -79,3 +80,5 @@ def rate_trip(request, trip_id):
         return redirect('trip_detail', trip_id=trip.id)
     
     return render(request, 'rate_trip.html', {'trip': trip, 'existing_rating': existing_rating})
+
+    '''
