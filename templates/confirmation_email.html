@@ -1,9 +1,86 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .email-header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        .email-content {
+            margin: 20px 0;
+        }
+        .email-content p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .email-footer {
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            margin-top: 30px;
+        }
+        .highlight {
+            color: #13357b;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            background-color: #13357b;
+            color: #ffffff;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
 <body>
-  <p>Dear {{ name }},</p>
-  <p>Thank you for booking the {{ package_name }} package with us. Your total price is {{ total_price }}.</p>
-  <p>We look forward to welcoming you!</p>
-  <p>Best regards,</p>
-  <p>The Travel Agency Team</p>
+
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Booking Confirmation</h1>
+        </div>
+
+        <div class="email-content">
+            <p>Hi {{ name }},</p>
+            <p>Thank you for booking with us! We're excited to confirm your booking for the <span class="highlight">{{ package_name }}</span> package.</p>
+            <p>Your booking details are as follows:</p>
+            <ul>
+                <li><strong>Package Name:</strong> {{ package_name }}</li>
+                <li><strong>Total Price:</strong> ${{ total_price }}</li>
+            </ul>
+            <p>If you have any questions or need further assistance, feel free to reach out to us.</p>
+        </div>
+
+        <div class="email-footer">
+            <p>Thank you for choosing our services!</p>
+            <p><a href="{{ your_website_url }}" class="button">Visit our Website</a></p>
+        </div>
+    </div>
+
 </body>
 </html>

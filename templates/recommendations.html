@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Recommendations</title>
+</head>
+<body>
+    <h1>Your Personalized Recommendations</h1>
+    <div class="recommendations">
+        {% if packages %}
+            <ul>
+                {% for package in packages %}
+                    <li>
+                        <h2>{{ package.name }}</h2>
+                        <p>Rating: {{ package.rating }} / 5</p>
+                        <p>Destination: {{ package.destination }}</p>
+                        <p>Duration: {{ package.duration }}</p>
+                        <p>Price: ${{ package.price }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No recommendations available at the moment.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

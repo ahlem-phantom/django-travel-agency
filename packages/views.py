@@ -13,8 +13,11 @@ from django.contrib import messages
 from django.urls import reverse
 import requests
 from django.core.mail import send_mail
-from .tasks import generate_pdf_invoice 
+from .tasks import generate_pdf_invoice, send_confirmation_email 
+from django.db.models import Q
+import numpy as np  # NumPy for calculations
 
+'''
 def send_confirmation_email(name, email, package_name, total_price):
     subject = f"Booking Confirmation - {package_name}"
     message = f"""
@@ -42,7 +45,7 @@ def send_confirmation_email(name, email, package_name, total_price):
         fail_silently=False,  # If True, errors will be silently ignored
     )
 
-
+'''
 def load_travel_packages_from_json():
     # Path to your JSON file
     file_path = os.path.join(settings.BASE_DIR, 'travel_packages.json')
@@ -197,7 +200,7 @@ def booking_handler_view(request, package_id):
                 # Redirect the user to the payment URL
                 booking.payment_status = 'Paid'
                 booking.save()
-                #send_confirmation_email(name, email, package.name, total_price)
+                send_confirmation_email(name, email, package.name, total_price)
                 generate_pdf_invoice.delay(booking.id) 
                 return HttpResponseRedirect(payment_url)
             else:
@@ -207,7 +210,9 @@ def booking_handler_view(request, package_id):
         
         # Return a response or redirect to a confirmation page
         # Redirect to the success page
-        send_confirmation_email(name, email, package.name, total_price)
+        print(f"Booking mail ok: {booking.id}")
+        #send_confirmation_email(name, email, package.name, total_price)
+        generate_pdf_invoice.apply_async(args=[booking.id]) 
         return redirect(reverse('booking_success'))  # Replace 'success_page' with the actual URL name for the success page
 
     # If the request is GET, just render the page with the form
@@ -255,6 +260,39 @@ def generate_flouci_payment(amount):
     else:
         return None
 
+
+def personalized_recommendations(request):
+    # Get the current user (or booking-related context)
+    current_user = request.user  # You may want to adjust this part if you have user accounts
+    
+    # Get the latest booking for the user (assuming booking is associated with the user somehow)
+    latest_booking = Booking.objects.filter(email=current_user.email).last()
+
+    if not latest_booking:
+        # If no booking is found for the user, show a general message or recommendations
+        packages = TravelPackage.objects.all().order_by('-rating')[:3]  # Top 3 by rating
+        return render(request, 'recommendations.html', {'packages': packages})
+    
+    # Extract user's preferences (gender and rating)
+    gender_preference = latest_booking.gender
+    user_rating = latest_booking.package.rating  # Assuming the user is interested in similar ratings
+    
+    # Now let's build a personalized recommendation list based on gender and package rating
+    gender_based_filter = Q()
+    if gender_preference == 'Male':
+        gender_based_filter = Q(package_type__in=['Adventure', 'Beach', 'Cultural'])  # Example for male preferences
+    elif gender_preference == 'Female':
+        gender_based_filter = Q(package_type__in=['Family', 'Relaxation', 'Cultural'])  # Example for female preferences
+    
+    # Calculate top 3 recommended packages based on rating and gender preference
+    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')
+
+    # Let's consider user rating in the mix
+    # We'll consider all packages with a rating greater than or equal to the user's previous package rating
+    recommendations = recommendations.filter(rating__gte=user_rating).order_by('-rating')[:3]  # Top 3
+
+    # Return top 3 recommended packages
+    return render(request, 'recommendations.html', {'packages': recommendations})
 
 
 def booking_success(request):

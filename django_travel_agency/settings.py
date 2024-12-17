@@ -163,27 +163,33 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')
 
-
+# Broker URL
+BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')  # Default to RabbitMQ URL
 
 # Celery settings
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'  # RabbitMQ URL
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-CELERYD_HIJACK_ROOT_LOGGER = False
-CELERY_LOG_LEVEL = 'INFO'
+CELERY_BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')  # Using environment variable or default URL
+CELERY_RESULT_BACKEND = 'django-db'  # Store results in Django database (make sure you have django-celery-results installed)
+CELERY_ACCEPT_CONTENT = ['json']  # Accept JSON content type for tasks
+CELERY_TASK_SERIALIZER = 'json'  # Serialize tasks as JSON
+CELERY_RESULT_SERIALIZER = 'json'  # Serialize task results as JSON
+CELERY_TIMEZONE = 'UTC'  # Set timezone for Celery tasks
+CELERYD_HIJACK_ROOT_LOGGER = False  # Don't hijack the root logger
+CELERY_LOG_LEVEL = 'INFO'  # Set logging level for Celery (can be DEBUG, INFO, etc.)
 
+# You can also set a few other optional settings for task retries and time limits if needed:
+CELERY_TASK_ACKS_LATE = True  # Acknowledge task after execution (good for retrying tasks)
+CELERY_TASK_DEFAULT_QUEUE = 'default'  # Set the default queue
+CELERY_TASK_TRACK_STARTED = True  # Track when tasks start executing
+
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.office365.com'  # Correct SMTP server for Outlook
+EMAIL_HOST = 'smtp.zoho.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'travelatrips.reply@outlook.com'
-EMAIL_HOST_PASSWORD = 'iglnknwiwbpksyhm'
-DEFAULT_FROM_EMAIL = 'travelatrips.reply@outlook.com'
+EMAIL_HOST_USER = 'travela.reply@zohomail.com'
+EMAIL_HOST_PASSWORD = 'Travela123@@'
+DEFAULT_FROM_EMAIL = 'travela.reply@zohomail.com'
 
 # Media settings
 MEDIA_URL = '/media/'
