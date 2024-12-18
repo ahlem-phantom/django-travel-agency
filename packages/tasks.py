@@ -1,17 +1,43 @@
-from celery import shared_task
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+# Django Imports
 from django.conf import settings
-from weasyprint import HTML
-from django.core.files.storage import FileSystemStorage
-from .models import Booking
-import os
+from django.core.mail import send_mail
 from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
+from django.db.models import Q
+from django.template.loader import render_to_string
+from django.contrib.auth.models import User
+
+# Third-Party Imports
+from weasyprint import HTML
+import numpy as np
+import os
 import datetime
 
-# Task to send the confirmation email
+# Local Imports
+from .models import Booking, TravelPackage
+from celery import shared_task
+
+
 @shared_task
 def send_confirmation_email(name, email, package_name, total_price):
+    """
+    Sends a booking confirmation email to the user.
+
+    This Celery task generates an email with the booking details and sends it 
+    to the provided email address using Django's send_mail function.
+
+    Args:
+        name (str): The name of the person who made the booking.
+        email (str): The email address to send the confirmation to.
+        package_name (str): The name of the travel package booked.
+        total_price (float): The total price of the booking.
+
+    Returns:
+        None: This function does not return a value. It sends an email asynchronously.
+    
+    Example:
+        send_confirmation_email.apply_async(args=['John Doe', 'john@example.com', 'Beach Getaway', 499.99])
+    """
     subject = f"Booking Confirmation for {package_name}"
     print('Sending email...')
     message = render_to_string('confirmation_email.html', {
@@ -25,27 +51,40 @@ def send_confirmation_email(name, email, package_name, total_price):
         message,
         settings.DEFAULT_FROM_EMAIL,
         [email],
-        html_message=message  # This ensures the email is sent as HTML
+        html_message=message  
     )
 
-# Task to generate PDF invoice
+
 @shared_task
 def generate_pdf_invoice(booking_id):
+    """
+    Generates a PDF invoice for a booking and stores it in the media directory.
+
+    This Celery task retrieves the booking details from the database, calculates
+    any applicable discounts, generates a PDF invoice using the data, and saves
+    the invoice as a PDF file in the media directory under 'invoices'.
+
+    Args:
+        booking_id (int): The ID of the booking for which the invoice is generated.
+
+    Returns:
+        str: The filename of the saved PDF invoice.
+
+    Example:
+        generate_pdf_invoice.apply_async(args=[123])
+    """
     booking = Booking.objects.get(id=booking_id)
     discount = (booking.package.price * 50 / 100) * booking.num_children
     today = datetime.date.today()
     print('Generating PDF invoice...')
 
-    # Render invoice HTML template
     html_content = render_to_string('invoice.html', {'booking': booking, 'discount': discount, 'today': today})
 
-    # Generate PDF from HTML
     pdf = HTML(string=html_content).write_pdf()
 
-    # Store the PDF file using FileSystemStorage
     fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'invoices'))
     filename = f'invoice_{booking.id}.pdf'
-    pdf_file = ContentFile(pdf)  # Wrap bytes into a file-like object
+    pdf_file = ContentFile(pdf)  
 
     fs.save(filename, pdf_file)
 
@@ -54,23 +93,42 @@ def generate_pdf_invoice(booking_id):
     return filename
 
 
+
 @shared_task
-def top_recommendations(user_id):
+def package_recommendations(user_id):
+    """
+    Recommends travel packages for a user based on their previous booking preferences.
+
+    This Celery task generates package recommendations for a user by analyzing their
+    most recent booking details (rating, price, destination, and package type) and
+    using a similarity-based approach to suggest packages that match their preferences.
+
+    If no previous booking is found, general top-rated travel packages are recommended.
+    The recommendations are filtered based on the user's gender and calculated using 
+    cosine similarity between the user's preferences and available packages.
+
+    Args:
+        user_id (int): The ID of the user for whom the recommendations are generated.
+
+    Returns:
+        list: A list of IDs of the top 3 recommended travel packages.
+
+    Example:
+        package_recommendations.apply_async(args=[123])
+    """
     current_user = User.objects.get(id=user_id)  # Get current user
     
-    # Get the latest booking for the user
     latest_booking = Booking.objects.filter(email=current_user.email).last()
 
     if not latest_booking:
-        # If no booking is found, show general recommendations
         packages = TravelPackage.objects.all().order_by('-rating')[:3]  # Top 3 by rating
         return [pkg.id for pkg in packages]
     
     # Extract user's preferences (rating from their last package)
     user_rating = latest_booking.package.rating
-    user_price_preference = latest_booking.package.price  # Assuming this comes from the user's last booking
-    user_destination_preference = latest_booking.package.destination  # Adjusted to 'destination'
-    user_package_type_preference = latest_booking.package.package_type  # Example: 'Adventure', 'Beach', etc.
+    user_price_preference = latest_booking.package.price 
+    user_destination_preference = latest_booking.package.destination 
+    user_package_type_preference = latest_booking.package.package_type 
     
     # Gender-based package filter
     gender_preference = latest_booking.gender
@@ -81,25 +139,7 @@ def top_recommendations(user_id):
         gender_based_filter = Q(package_type__in=['Family', 'Relaxation', 'Cultural'])
     
     # Get the available packages based on gender
-    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')
-
-    # Function to create the feature vector for each package
-    def get_feature_vector(pkg, user_rating):
-        normalized_price = (pkg.price - min_price) / (max_price - min_price)  # Normalize between 0 and 1
-        
-        # Package type one-hot encoding
-        package_types = ['Adventure', 'Beach', 'Cultural', 'Family', 'Relaxation']
-        package_type_vector = [1 if pkg.package_type == pt else 0 for pt in package_types]
-        
-        # Destination one-hot encoding
-        destinations = ['Europe', 'Asia', 'Africa', 'America']
-        destination_vector = [1 if pkg.destination == dest else 0 for dest in destinations]
-        
-        # Create the feature vector
-        feature_vector = np.array([pkg.rating, normalized_price] + package_type_vector + destination_vector)
-        user_feature_vector = np.array([user_rating, user_price_preference] + [1 if user_package_type_preference == pt else 0 for pt in package_types] + [1 if user_destination_preference == dest else 0 for dest in destinations])
-        
-        return feature_vector, user_feature_vector
+    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')    
 
     # Get min and max prices for normalization
     min_price = min(pkg.price for pkg in recommendations)
@@ -117,3 +157,47 @@ def top_recommendations(user_id):
     top_recommendations = [pkg for pkg, similarity in sorted_recommendations]
     
     return [pkg.id for pkg in top_recommendations]  # Return the IDs of recommended packages
+
+
+
+def get_feature_vector(pkg, user_rating):
+        """
+        Generates feature vectors for a travel package and a user based on various attributes.
+
+        This function creates two feature vectors:
+        1. `feature_vector`: A vector representing the travel package, including normalized price,
+        package rating, and one-hot encoded values for the package type and destination.
+        2. `user_feature_vector`: A vector representing the user's preferences, including the user's
+        last rating, price preference, and one-hot encoded values for the package type and destination
+        that the user prefers.
+
+        The function normalizes the price of the package to a value between 0 and 1 and encodes categorical
+        features (package type and destination) as binary (one-hot) vectors.
+
+        Args:
+            pkg (TravelPackage): The travel package object to generate the feature vector for.
+            user_rating (float): The rating given by the user to their last package.
+
+        Returns:
+            tuple: A tuple containing two NumPy arrays:
+                - `feature_vector`: A vector for the travel package.
+                - `user_feature_vector`: A vector for the user's preferences.
+
+        Example:
+            feature_vector, user_feature_vector = get_feature_vector(pkg, user_rating)
+        """
+        normalized_price = (pkg.price - min_price) / (max_price - min_price)  # Normalize between 0 and 1
+        
+        # Package type one-hot encoding
+        package_types = ['Adventure', 'Beach', 'Cultural', 'Family', 'Relaxation']
+        package_type_vector = [1 if pkg.package_type == pt else 0 for pt in package_types]
+        
+        # Destination one-hot encoding
+        destinations = ['Europe', 'Asia', 'Africa', 'America']
+        destination_vector = [1 if pkg.destination == dest else 0 for dest in destinations]
+        
+        # Create the feature vector
+        feature_vector = np.array([pkg.rating, normalized_price] + package_type_vector + destination_vector)
+        user_feature_vector = np.array([user_rating, user_price_preference] + [1 if user_package_type_preference == pt else 0 for pt in package_types] + [1 if user_destination_preference == dest else 0 for dest in destinations])
+        
+        return feature_vector, user_feature_vector
