@@ -126,6 +126,7 @@ You'll be prompted to enter a username, email, and password for the admin accoun
   rabbitmq-plugins enable rabbitmq_management
   ```
 This will enable the web interface at http://localhost:15672. You can log in using the default credentials (guest as both the username and password).
+
 11. Start the Celery worker
    ```sh
    celery -A django_travel_agency worker --loglevel=info
