@@ -1,6 +1,9 @@
 from django.db import models
 
 class TravelNews(models.Model):
+    '''
+    Model for Travel News
+    '''
     title = models.CharField(max_length=255)
     link = models.URLField()
     content = models.TextField(blank=True)

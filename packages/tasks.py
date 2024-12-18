@@ -93,7 +93,6 @@ def generate_pdf_invoice(booking_id):
     return filename
 
 
-
 @shared_task
 def package_recommendations(user_id):
     """
@@ -116,21 +115,19 @@ def package_recommendations(user_id):
     Example:
         package_recommendations.apply_async(args=[123])
     """
-    current_user = User.objects.get(id=user_id)  # Get current user
+    current_user = User.objects.get(id=user_id)
     
     latest_booking = Booking.objects.filter(email=current_user.email).last()
 
     if not latest_booking:
-        packages = TravelPackage.objects.all().order_by('-rating')[:3]  # Top 3 by rating
+        packages = TravelPackage.objects.all().order_by('-rating')[:3]  
         return [pkg.id for pkg in packages]
     
-    # Extract user's preferences (rating from their last package)
     user_rating = latest_booking.package.rating
-    user_price_preference = latest_booking.package.price 
-    user_destination_preference = latest_booking.package.destination 
+    user_price_preference = latest_booking.package.price  
+    user_destination_preference = latest_booking.package.destination  
     user_package_type_preference = latest_booking.package.package_type 
     
-    # Gender-based package filter
     gender_preference = latest_booking.gender
     gender_based_filter = Q()
     if gender_preference == 'Male':
@@ -138,66 +135,35 @@ def package_recommendations(user_id):
     elif gender_preference == 'Female':
         gender_based_filter = Q(package_type__in=['Family', 'Relaxation', 'Cultural'])
     
-    # Get the available packages based on gender
-    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')    
+    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')
 
-    # Get min and max prices for normalization
     min_price = min(pkg.price for pkg in recommendations)
     max_price = max(pkg.price for pkg in recommendations)
     
-    # Calculate cosine similarity for each package manually
+    def get_feature_vector(pkg, user_rating):
+        normalized_price = (pkg.price - min_price) / (max_price - min_price)  
+        
+        package_types = ['Adventure', 'Beach', 'Cultural', 'Family', 'Relaxation']
+        package_type_vector = [1 if pkg.package_type == pt else 0 for pt in package_types]
+        
+        destinations = ['Europe', 'Asia', 'Africa', 'America']
+        destination_vector = [1 if pkg.destination == dest else 0 for dest in destinations]
+        
+        feature_vector = np.array([pkg.rating, normalized_price] + package_type_vector + destination_vector)
+        user_feature_vector = np.array([user_rating, user_price_preference] + [1 if user_package_type_preference == pt else 0 for pt in package_types] + [1 if user_destination_preference == dest else 0 for dest in destinations])
+        
+        return feature_vector, user_feature_vector
+
     similarities = []
     for pkg in recommendations:
         pkg_feature_vector, user_feature_vector = get_feature_vector(pkg, user_rating)
         cosine_sim = np.dot(pkg_feature_vector, user_feature_vector) / (np.linalg.norm(pkg_feature_vector) * np.linalg.norm(user_feature_vector))
         similarities.append((pkg, cosine_sim))
     
-    # Sort packages by similarity and return top 3
     sorted_recommendations = sorted(similarities, key=lambda x: x[1], reverse=True)[:3]
     top_recommendations = [pkg for pkg, similarity in sorted_recommendations]
     
-    return [pkg.id for pkg in top_recommendations]  # Return the IDs of recommended packages
+    return [pkg.id for pkg in top_recommendations]
 
 
 
-def get_feature_vector(pkg, user_rating):
-        """
-        Generates feature vectors for a travel package and a user based on various attributes.
-
-        This function creates two feature vectors:
-        1. `feature_vector`: A vector representing the travel package, including normalized price,
-        package rating, and one-hot encoded values for the package type and destination.
-        2. `user_feature_vector`: A vector representing the user's preferences, including the user's
-        last rating, price preference, and one-hot encoded values for the package type and destination
-        that the user prefers.
-
-        The function normalizes the price of the package to a value between 0 and 1 and encodes categorical
-        features (package type and destination) as binary (one-hot) vectors.
-
-        Args:
-            pkg (TravelPackage): The travel package object to generate the feature vector for.
-            user_rating (float): The rating given by the user to their last package.
-
-        Returns:
-            tuple: A tuple containing two NumPy arrays:
-                - `feature_vector`: A vector for the travel package.
-                - `user_feature_vector`: A vector for the user's preferences.
-
-        Example:
-            feature_vector, user_feature_vector = get_feature_vector(pkg, user_rating)
-        """
-        normalized_price = (pkg.price - min_price) / (max_price - min_price)  # Normalize between 0 and 1
-        
-        # Package type one-hot encoding
-        package_types = ['Adventure', 'Beach', 'Cultural', 'Family', 'Relaxation']
-        package_type_vector = [1 if pkg.package_type == pt else 0 for pt in package_types]
-        
-        # Destination one-hot encoding
-        destinations = ['Europe', 'Asia', 'Africa', 'America']
-        destination_vector = [1 if pkg.destination == dest else 0 for dest in destinations]
-        
-        # Create the feature vector
-        feature_vector = np.array([pkg.rating, normalized_price] + package_type_vector + destination_vector)
-        user_feature_vector = np.array([user_rating, user_price_preference] + [1 if user_package_type_preference == pt else 0 for pt in package_types] + [1 if user_destination_preference == dest else 0 for dest in destinations])
-        
-        return feature_vector, user_feature_vector
