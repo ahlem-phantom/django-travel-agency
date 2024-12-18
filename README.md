@@ -133,6 +133,22 @@ _In order to install the app you need to follow the instructions below :_
 - **Get Recommendations**: Log in to see travel recommendations tailored to your preferences.
 
 
+Start by exploring the available travel packages and choose the one that suits your preferences.
+| <img src="https://github.com/user-attachments/assets/b6121784-5cc8-4133-a60a-332bfb980837" width="900" height="600"/><br> **Browse Packages**| 
+| ------------- |
+
+Proceed to the booking form where you can:
+1. Select the number of adults and children.
+2. Enjoy dynamic pricing: Children receive a 50% discount, and the total price updates in real-time based on your selection.
+3. Choose your preferred payment method: Pay online or on-site for added flexibility.
+
+| <img src="https://github.com/user-attachments/assets/ed04935c-850d-487f-870d-0f9b8b10ea1e" width="900" height="600"/>  <br>**Book a Trip**| 
+| ------------- |
+
+Once the online payment is picked, a payment URL will be generated, redirecting you to the payment page. To simulate a successful transaction, enter "111111" and you will be redirected to the success page. For a failed payment, use "0000000" to be redirected to the failure page.
+| <img src="https://github.com/user-attachments/assets/198604f7-1a4c-45c2-8feb-779141ff0c79" /><br> **Flouci Payment**| <img src="https://github.com/user-attachments/assets/499e1a71-a64e-42f4-9ac4-3de960686cd7" />  <br>**Booking Success**| 
+| ------------- | ------------- | 
+
 
 <!-- CONTACT -->
 ## 💌 Contact
