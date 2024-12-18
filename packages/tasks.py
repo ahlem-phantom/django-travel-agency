@@ -8,6 +8,7 @@ from .models import Booking
 import os
 from django.core.files.base import ContentFile
 import datetime
+
 # Task to send the confirmation email
 @shared_task
 def send_confirmation_email(name, email, package_name, total_price):

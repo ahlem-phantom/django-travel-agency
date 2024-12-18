@@ -17,6 +17,7 @@ from .tasks import generate_pdf_invoice, send_confirmation_email , top_recommend
 from django.db.models import Q
 import numpy as np  # NumPy for calculations
 from celery.result import AsyncResult
+from django.conf import settings
 
 
 
@@ -164,12 +165,12 @@ def booking_handler_view(request, package_id):
 
 def generate_flouci_payment(amount):
     # Replace with your actual values
-    app_token = "8d689544-f77b-43a7-94ab-93ef6b1e7104"
-    app_secret = "5727a53a-2033-41a4-839a-294c5e5ea299"
+    #app_token = "8d689544-f77b-43a7-94ab-93ef6b1e7104"
+    #app_secret = "5727a53a-2033-41a4-839a-294c5e5ea299"
     
     payload = {
-        "app_token": app_token,
-        "app_secret": app_secret,
+        "app_token": settings.FLOUCI_APP_TOKEN,
+        "app_secret": settings.FLOUCI_APP_SECRET,
         "accept_card": "true",
         "amount": str(int(amount * 100)),  # Amount in smallest unit (e.g., cents)
         "success_link": "http://localhost:8000/packages/success/",
@@ -206,28 +207,73 @@ def generate_flouci_payment(amount):
 
 # Function to display recommended packages
 def packages_recommendations(request):
-    # Call the Celery task asynchronously
-    task = top_recommendations.apply_async(args=[request.user.id])
+    current_user = request.user  # Get current user
     
-    # Create an AsyncResult object to check the status of the task
-    result = AsyncResult(task.id)
+    # Get the latest booking for the user (assuming booking is associated with the user somehow)
+    latest_booking = Booking.objects.filter(email=current_user.email).last()
+
+    if not latest_booking:
+        # If no booking is found, show general recommendations
+        packages = TravelPackage.objects.all().order_by('-rating')[:3]  # Top 3 by rating
+        return render(request, 'recommendations.html', {'packages': packages})
     
-    # Check if the task has finished
-    if result.ready():
-        # If task is ready, get the result (list of recommended package IDs)
-        recommended_package_ids = result.result
+    # Extract user's preferences (rating from their last package)
+    user_rating = latest_booking.package.rating
+    user_price_preference = latest_booking.package.price  # Assuming this comes from the user's last booking
+    user_destination_preference = latest_booking.package.destination  # Adjusted to 'destination'
+    user_package_type_preference = latest_booking.package.package_type  # Example: 'Adventure', 'Beach', etc.
+    
+    # Now filter based on gender (if applicable)
+    gender_preference = latest_booking.gender
+    gender_based_filter = Q()
+    if gender_preference == 'Male':
+        gender_based_filter = Q(package_type__in=['Adventure', 'Beach', 'Cultural'])
+    elif gender_preference == 'Female':
+        gender_based_filter = Q(package_type__in=['Family', 'Relaxation', 'Cultural'])
+    
+    # Get the available packages based on gender
+    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')
+    
+    # Function to create the feature vector for each package
+    def get_feature_vector(pkg, user_rating):
+        # Normalize the price (this is just an example, adjust to your data range)
+        normalized_price = (pkg.price - min_price) / (max_price - min_price)  # Normalize between 0 and 1
         
-        # Ensure that the result is a list of IDs
-        if isinstance(recommended_package_ids, list):
-            recommended_packages = TravelPackage.objects.filter(id__in=recommended_package_ids)
-            return render(request, 'recommendations.html', {'packages': recommended_packages})
-        else:
-            # Handle case where result is not a list (error in task)
-            return HttpResponse("Error: Task result is not a list of package IDs.")
+        # Package type one-hot encoding
+        package_types = ['Adventure', 'Beach', 'Cultural', 'Family', 'Relaxation']
+        package_type_vector = [1 if pkg.package_type == pt else 0 for pt in package_types]
+        
+        # Destination one-hot encoding (you may want to adjust this depending on your destinations)
+        destinations = ['Europe', 'Asia', 'Africa', 'America']
+        destination_vector = [1 if pkg.destination == dest else 0 for dest in destinations]
+        
+        # Create the feature vector (combine all features into one vector)
+        feature_vector = np.array([pkg.rating, normalized_price] + package_type_vector + destination_vector)
+        
+        # Create a feature vector for the user
+        user_feature_vector = np.array([user_rating, user_price_preference] + [1 if user_package_type_preference == pt else 0 for pt in package_types] + [1 if user_destination_preference == dest else 0 for dest in destinations])
+        
+        return feature_vector, user_feature_vector
+
+    # Get min and max prices for normalization
+    min_price = min(pkg.price for pkg in recommendations)
+    max_price = max(pkg.price for pkg in recommendations)
     
-    else:
-        # If the task is still processing, return a loading page or message
-        return render(request, 'loading.html')  # Loading page until task finishes
+    # Calculate cosine similarity for each package manually
+    similarities = []
+    for pkg in recommendations:
+        pkg_feature_vector, user_feature_vector = get_feature_vector(pkg, user_rating)
+        
+        # Calculate cosine similarity manually
+        cosine_sim = np.dot(pkg_feature_vector, user_feature_vector) / (np.linalg.norm(pkg_feature_vector) * np.linalg.norm(user_feature_vector))
+        similarities.append((pkg, cosine_sim))
+    
+    # Sort packages by similarity and return top 3
+    sorted_recommendations = sorted(similarities, key=lambda x: x[1], reverse=True)[:3]
+    top_recommendations = [pkg for pkg, similarity in sorted_recommendations]
+    
+    # Return the top 3 recommended packages
+    return render(request, 'recommendations.html', {'packages': top_recommendations})
 
 
 def booking_success(request):
@@ -268,3 +314,4 @@ def tag_delete(request, pk):
     tag = get_object_or_404(Tag, pk=pk)
     tag.delete()
     return redirect('tag_list')
+ 
