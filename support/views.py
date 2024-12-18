@@ -6,18 +6,16 @@ from django.views.decorators.csrf import csrf_exempt
 def index(request):
     return HttpResponse("This is the support index.")
     
-@csrf_exempt  # Disable CSRF protection for this view
+@csrf_exempt  
 def handle_button_click(request):
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        # Initialize a session or retrieve from existing session
         if 'conversation_state' not in request.session:
-            request.session['conversation_state'] = 'start'  # Initial state
+            request.session['conversation_state'] = 'start' 
 
         conversation_state = request.session['conversation_state']
         
-        # Define responses based on button click action
         if action == 'book':
             if conversation_state == 'start':
                 response_message = 'Sure! Let me assist you with booking a trip. Can you please provide your destination?'
@@ -56,7 +54,6 @@ def handle_button_click(request):
         else:
             response_message = 'I am sorry, I didn’t understand that action. Can you please try again?'
 
-        # Save conversation state in the session
         request.session.modified = True
 
         return JsonResponse({'message': response_message})
