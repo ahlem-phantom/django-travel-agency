@@ -34,8 +34,8 @@ This project involves developing a web application for a travel agency using Dja
 Key features of the application include:
 1. **User Booking & Payment:** Users can browse different travel packages, view details, and book their trips through the platform. Payment integration will allow users to pay securely for their bookings.
 2. **Email Confirmation:** Upon completing a booking, the system will asynchronously send an email confirmation to the user, leveraging Celery with RabbitMQ as the message broker.
-3. **PDF Invoice Generation:** After booking, the system will generate and send a PDF invoice to the user’s email. This will be done using libraries like ReportLab or WeasyPrint to dynamically generate invoices based on booking details.
-4. **Travel News Scraping:** The app will scrape travel news websites using tools like BeautifulSoup or Scrapy to gather the latest news and tips. These articles will be stored in the app’s database for easy access by users.
+3. **PDF Invoice Generation:** After booking, the system will generate and send a PDF invoice to the user’s email. This will be done using WeasyPrint library to dynamically generate invoices based on booking details.
+4. **Travel News Scraping:** The app will scrape travel news websites using BeautifulSoup tool to gather the latest news and tips. These articles will be stored in the app’s database for easy access by users.
 5. **Personalized Recommendations:** The system will analyze user preferences and feedback, and provide personalized recommendations for packages, activities, or destinations using libraries such as NumPy or SciPy for calculations.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
