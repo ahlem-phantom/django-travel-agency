@@ -73,18 +73,6 @@ _In order to install the app you need to follow the instructions below :_
    ```sh
    git clone https://github.com/ahlem-phantom/django-travel-agency.git
    ```
-   
-#### Celery Setup :
-
-1. Start RabbitMQ (ensure RabbitMQ is installed and running)
-   ```sh
-   rabbitmq-server 
-   ```
-   
-2. Start the Celery worker
-   ```sh
-   celery -A django_travel_agency worker --loglevel=info
-   ```
 
 
  #### Project backend :
@@ -119,6 +107,26 @@ _In order to install the app you need to follow the instructions below :_
 
 7. Open localhost:8000 to enjoy the app.
 
+   
+#### Celery Setup :
+
+1. Start RabbitMQ (ensure RabbitMQ is installed and running)
+   ```sh
+   rabbitmq-server 
+   ```
+2. Enable RabbitMQ Management Plugin:
+  ```sh
+  rabbitmq-plugins enable rabbitmq_management
+  ```
+4. Start the Celery worker
+   ```sh
+   celery -A django_travel_agency worker --loglevel=info
+   ```
+
+
+| <img src="https://github.com/user-attachments/assets/25328ccc-3aed-4f6f-b0b6-92529c4e8b38"/>  <br>**Storage of Celery Task Results in the database**| <img src="https://github.com/user-attachments/assets/5a5a369c-7867-4fda-863a-1805f7ab1d15" />  <br>**RabbitMQ**| 
+| ------------- |------------- | 
+
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -130,7 +138,7 @@ _In order to install the app you need to follow the instructions below :_
 - **Browse Packages**: Navigate to the homepage to view all available travel packages.
 - **Book a Trip**: Select a package, provide your details, and complete the payment process.
 - **Receive Confirmation**: Check your email for the booking confirmation and attached PDF invoice.
-- **Get Recommendations**: Log in to see travel recommendations tailored to your preferences.
+- **Get Recommendations**: Get top rated travel recommendations.
 
 
 Start by exploring the available travel packages and choose the one that suits your preferences.
@@ -148,6 +156,20 @@ Proceed to the booking form where you can:
 Once the online payment is picked, a payment URL will be generated, redirecting you to the payment page. To simulate a successful transaction, enter "111111" and you will be redirected to the success page. For a failed payment, use "0000000" to be redirected to the failure page.
 | <img src="https://github.com/user-attachments/assets/198604f7-1a4c-45c2-8feb-779141ff0c79" /><br> **Flouci Payment**| <img src="https://github.com/user-attachments/assets/499e1a71-a64e-42f4-9ac4-3de960686cd7" />  <br>**Booking Success**| 
 | ------------- | ------------- | 
+
+Upon Booking a pdf invoice will be generated asynchronysly and you will recieve a confirmation mail:
+| <img src="https://github.com/user-attachments/assets/493d7e4a-fdd1-4590-8520-c4dcdc644a0a" /><br> **PDF INVOICE**| <img src="https://github.com/user-attachments/assets/c7087302-a1e1-44f6-bc51-039be12908a9" />  <br>**Booking Confirmation Email**| 
+| ------------- | ------------- | 
+
+
+You can also explore the latest travel news, trends, and expert tips, all conveniently gathered through web scraping. 
+| <img src="https://github.com/user-attachments/assets/eb243426-8b6d-4d6f-ae16-71f67e2bbd14"/>  <br>**News Articles Scraping**| <img src="https://github.com/user-attachments/assets/c3c9c2ff-2ec8-42f4-be8d-6f0846335ff2" />  <br>**News Articles Source: https://www.lonelyplanet.com/news**| 
+| ------------- |------------- | 
+
+
+I started this but didn't have time to finish it all. I created an assistant to guide users through the booking process and gather user feedback, but time was short. I also built a recommendation system, but it's not strong enough as it relies on ratings that I personally added to the database for each travel package and user gender. It lacks user data like feedback and preferences.
+| <img src="https://github.com/user-attachments/assets/07c2f23c-de2e-4633-878e-3673844ec4fd"/>  <br>**Chatbot Assistant**| <img src="https://github.com/user-attachments/assets/976c0402-03df-486c-a097-6dbdedeed901" />  <br>**Packages Recommandations**| 
+| ------------- |------------- | 
 
 
 <!-- CONTACT -->
