@@ -106,6 +106,7 @@ _In order to install the app you need to follow the instructions below :_
    python manage.py createsuperuser
    ```
 You'll be prompted to enter a username, email, and password for the admin account. After the superuser is created, you'll be able to log in to the Django admin dashboard.
+
 7. Run the django server
    ```sh
    python manage.py runserver
