@@ -100,25 +100,32 @@ _In order to install the app you need to follow the instructions below :_
    python manage.py migrate django_celery_results
    ```
 
-6. Run the django server
+
+6. Create a Superuser Account for Admin Access
+   ```sh
+   python manage.py runserver
+   ```
+You'll be prompted to enter a username, email, and password for the admin account. After the superuser is created, you'll be able to log in to the Django admin dashboard.
+7. Run the django server
    ```sh
    python manage.py runserver
    ```
 
-7. Open localhost:8000 to enjoy the app.
+8. Open localhost:8000 to enjoy the app.
 
    
 #### Celery Setup :
 
-1. Start RabbitMQ (ensure RabbitMQ is installed and running)
+9. Start RabbitMQ (ensure RabbitMQ is installed and running)
    ```sh
    rabbitmq-server 
    ```
-2. Enable RabbitMQ Management Plugin:
+10. Enable RabbitMQ Management Plugin:
   ```sh
   rabbitmq-plugins enable rabbitmq_management
   ```
-4. Start the Celery worker
+This will enable the web interface at http://localhost:15672. You can log in using the default credentials (guest as both the username and password).
+11. Start the Celery worker
    ```sh
    celery -A django_travel_agency worker --loglevel=info
    ```
