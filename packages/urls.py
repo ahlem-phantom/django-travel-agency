@@ -21,6 +21,6 @@ urlpatterns = [
     path('book/<int:package_id>/', views.booking_handler_view, name='booking_handler_view'),
     path('success/', views.booking_success, name='booking_success'),
     path('fail/', views.booking_fail, name='booking_fail'),
-    path('recommendations/', views.personalized_recommendations, name='personalized_recommendations'),
+    path('recommendations/', views.packages_recommendations, name='packages_recommendations'),
 
 ]

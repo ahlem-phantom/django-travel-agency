@@ -18,16 +18,12 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-j8)%wvj^hd%6o(zdi+=30jx=bq-zvx)j71u&9-*5%^-_e$qys2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -39,15 +35,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     'django_celery_results',
-   # 'invoices',  # Register the invoices app
-    'support',   # Register the support app
-    'news',      # Register the news app
-    'home',      # Register the home app
-    #'trips',     # Register the trips app
-    'accounts',  # Register the accounts app
-    'packages',  # Register the packages app
-    'rest_framework',  # Register the Django REST framework    
+    'django_celery_results',
+    'support',  
+    'news',     
+    'home',    
+    'packages',  
+    'rest_framework',  
     'django_filters',
     'django_celery_beat',
 ]
@@ -81,7 +74,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 WSGI_APPLICATION = 'django_travel_agency.wsgi.application'
 
@@ -158,29 +150,32 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  
+]
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Broker URL
-BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')  # Default to RabbitMQ URL
+BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/') 
 
 # Celery settings
-CELERY_BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')  # Using environment variable or default URL
-CELERY_RESULT_BACKEND = 'django-db'  # Store results in Django database (make sure you have django-celery-results installed)
-CELERY_ACCEPT_CONTENT = ['json']  # Accept JSON content type for tasks
-CELERY_TASK_SERIALIZER = 'json'  # Serialize tasks as JSON
-CELERY_RESULT_SERIALIZER = 'json'  # Serialize task results as JSON
-CELERY_TIMEZONE = 'UTC'  # Set timezone for Celery tasks
-CELERYD_HIJACK_ROOT_LOGGER = False  # Don't hijack the root logger
-CELERY_LOG_LEVEL = 'INFO'  # Set logging level for Celery (can be DEBUG, INFO, etc.)
+CELERY_BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/') 
+CELERY_RESULT_BACKEND = 'django-db'  
+CELERY_ACCEPT_CONTENT = ['json']  
+CELERY_TASK_SERIALIZER = 'json' 
+CELERY_RESULT_SERIALIZER = 'json'  
+CELERY_TIMEZONE = 'UTC'  
+CELERYD_HIJACK_ROOT_LOGGER = False 
+CELERY_LOG_LEVEL = 'INFO'  
 
-# You can also set a few other optional settings for task retries and time limits if needed:
-CELERY_TASK_ACKS_LATE = True  # Acknowledge task after execution (good for retrying tasks)
-CELERY_TASK_DEFAULT_QUEUE = 'default'  # Set the default queue
-CELERY_TASK_TRACK_STARTED = True  # Track when tasks start executing
+CELERY_TASK_ACKS_LATE = True  
+CELERY_TASK_DEFAULT_QUEUE = 'default'  
+CELERY_TASK_TRACK_STARTED = True  
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -195,10 +190,4 @@ DEFAULT_FROM_EMAIL = 'travela.reply@zohomail.com'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_URL = '/static/'
-# Define where static files are collected
-STATICFILES_DIRS = [
-    BASE_DIR / "static",  # Path to the global static folder
-]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For `collectstatic`

@@ -1,0 +1,59 @@
+<div id="news" class="container-fluid blog py-5">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width: 900px;">
+            <h5 class="section-title px-3">Travel News</h5>
+            <h1 class="mb-4">Popular Travel News</h1>
+            <p class="mb-0">Stay informed with the most up-to-date news from the world of travel. Whether you're looking for exciting destinations, tips for your next trip, or the latest travel trends, we’ve got you covered.
+            </p>
+        </div>
+        {% if page_obj %}
+
+        <div class="row g-4 justify-content-center">
+            {% for article in page_obj %}
+
+            <div class="col-lg-4 col-md-6">
+                <div class="blog-item">
+                    <div class="blog-img">
+                        <div class="blog-img-inner">
+                            {% load static %}
+                            {% if article.image_url %}
+                            <img class="img-fluid w-100 rounded-top" src="{{ article.image_url }}" alt="Image">
+                            {% endif %}
+                            <div class="blog-icon">
+                                <a href="#" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                            </div>
+                        </div>
+                        <div class="blog-info d-flex align-items-center border border-start-0 border-end-0">
+                            <small class="flex-fill text-center border-end py-2"><i class="fa fa-calendar-alt text-primary me-2"></i>{{ article.published_date }}</small>
+                            <a href="#" class="btn-hover flex-fill text-center text-white border-end py-2"><i class="fa fa-thumbs-up text-primary me-2"></i>{{ article.read_time }} min read</a>
+                            <a href="#" class="btn-hover flex-fill text-center text-white py-2"><i class="fa fa-comments text-primary me-2"></i>1K</a>
+                        </div>
+                    </div>
+                    <div class="blog-content border border-top-0 rounded-bottom p-4">
+                        <p class="mb-3" style="display: inline-block; text-transform: uppercase; font-weight: bold; color: #fff; background-color: #13357B; padding: 5px 15px; border-radius: 20px; font-size: 0.875em; margin-bottom: 8px;">
+                            {{ article.category|capfirst }}
+                        </p>
+                               <br/>                     
+                        <a href="https://www.lonelyplanet.com{{ article.link }}" class="h4" target="_blank">{{ article.title }}</a>
+
+                        <p class="my-3">{{ article.content|truncatewords:12 }}</p> <!-- Truncated content for preview -->
+
+                        <a href="https://www.lonelyplanet.com{{ article.link }}" class="btn btn-outline-primary rounded-pill py-2 px-4">Visit Site</a>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="col-12">
+                <div class="text-center">
+                    <a class="btn btn-primary rounded-pill py-3 px-5 mt-2" href="{% url 'travel_news_list' %}"">All News</a>
+                </div>
+            </div>
+            
+        </div>
+
+{% else %}
+<p class="no-articles">No travel news available.</p>
+{% endif %}
+</div>
+</div>

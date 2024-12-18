@@ -13,46 +13,12 @@ from django.contrib import messages
 from django.urls import reverse
 import requests
 from django.core.mail import send_mail
-from .tasks import generate_pdf_invoice, send_confirmation_email 
+from .tasks import generate_pdf_invoice, send_confirmation_email , top_recommendations
 from django.db.models import Q
 import numpy as np  # NumPy for calculations
+from celery.result import AsyncResult
 
-'''
-def send_confirmation_email(name, email, package_name, total_price):
-    subject = f"Booking Confirmation - {package_name}"
-    message = f"""
-    Hello {name},
 
-    Thank you for booking your trip with us. Your booking for {package_name} has been successfully confirmed!
-
-    Booking Details:
-    - Name: {name}
-    - Package: {package_name}
-    - Total Price: {total_price} TND
-
-    You will receive an email with all the details shortly.
-
-    If you have any questions, feel free to reach out to us.
-
-    Best regards,
-    The Travel Team
-    """
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,  # From email
-        [email],  # To email
-        fail_silently=False,  # If True, errors will be silently ignored
-    )
-
-'''
-def load_travel_packages_from_json():
-    # Path to your JSON file
-    file_path = os.path.join(settings.BASE_DIR, 'travel_packages.json')
-
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-    return data
 
 def book_package(request, pk):
     package = get_object_or_404(TravelPackage, pk=pk)
@@ -62,11 +28,33 @@ def travel_package_list(request):
     travel_packages =  TravelPackage.objects.all()
     ratings_range = range(1, 6)  # Range for star rating
     return render(request, 'travel_package_list.html', {'packages': travel_packages, 'ratings_range': ratings_range}) 
-# TravelPackage CRUD views
-'''def travel_package_list(request):
-    packages = TravelPackage.objects.all()
-    return render(request, 'travel_package_list.html', {'packages': packages})
-'''
+
+def validate_booking(name, email, booking_date, num_adults, num_children, payment_method, consent):
+    errors = {}
+    if len(name) < 2:
+        errors['name'] = "Name must only contain letters and be at least 2 characters."
+    if '@' not in email:
+        errors['email'] = "Invalid email address."
+    if not booking_date or datetime.strptime(booking_date, '%Y-%m-%d').date() < date.today():
+        errors['datetime'] = "The date must be today or a future date."
+    if num_adults <= 0:
+        errors['SelectPerson'] = "Number of persons must be at least 1."
+    if num_children < 0:
+        errors['SelectKids'] = "Number of kids cannot be negative."
+    if not payment_method:
+        errors['payment_method'] = "Payment method is required."
+    if not consent:
+        errors['consent'] = "You must agree to the terms and conditions."
+    return errors
+
+
+def calculate_total_price(package, num_adults, num_children, child_discount):
+    unit_price = package.price
+    adults_price = unit_price * num_adults
+    children_price = (unit_price * child_discount) * num_children
+    return adults_price + children_price
+
+
 def travel_package_create(request):
     if request.method == 'POST':
         form = TravelPackageForm(request.POST)
@@ -93,38 +81,9 @@ def travel_package_delete(request, pk):
     package.delete()
     return redirect('travel_package_list')
 
-# Tag CRUD views
-def tag_list(request):
-    tags = Tag.objects.all()
-    return render(request, 'tag_list.html', {'tags': tags})
-
-def tag_create(request):
-    if request.method == 'POST':
-        form = TagForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('tag_list')
-    else:
-        form = TagForm()
-    return render(request, 'tag_form.html', {'form': form})
-
-def tag_update(request, pk):
-    tag = get_object_or_404(Tag, pk=pk)
-    if request.method == 'POST':
-        form = TagForm(request.POST, instance=tag)
-        if form.is_valid():
-            form.save()
-            return redirect('tag_list')
-    else:
-        form = TagForm(instance=tag)
-    return render(request, 'tag_form.html', {'form': form})
-
-def tag_delete(request, pk):
-    tag = get_object_or_404(Tag, pk=pk)
-    tag.delete()
-    return redirect('tag_list')
 
 
+# Booking handler view
 def booking_handler_view(request, package_id):
     package = get_object_or_404(TravelPackage, id=package_id)
     child_discount = Decimal('0.5')
@@ -144,20 +103,7 @@ def booking_handler_view(request, package_id):
         errors = {}
 
         # Server-side validations
-        if not name.isalpha() or len(name) < 2:
-            errors['name'] = "Name must only contain letters and be at least 2 characters."
-        if '@' not in email:
-            errors['email'] = "Invalid email address."
-        if not booking_date or datetime.strptime(booking_date, '%Y-%m-%d').date() < date.today():
-            errors['datetime'] = "The date must be today or a future date."
-        if num_adults <= 0:
-            errors['SelectPerson'] = "Number of persons must be at least 1."
-        if num_children < 0:
-            errors['SelectKids'] = "Number of kids cannot be negative."
-        if not payment_method:
-            errors['payment_method'] = "Payment method is required."
-        if not consent:
-            errors['consent'] = "You must agree to the terms and conditions."
+        errors = validate_booking(name, email, booking_date, num_adults, num_children, payment_method, consent)
 
         # If there are errors, return the same form with errors
         if errors:
@@ -174,10 +120,7 @@ def booking_handler_view(request, package_id):
                 'errors': errors  # Pass errors to the template
             })
         # Calculate total price
-        unit_price = package.price
-        adults_price = unit_price * num_adults
-        children_price = (unit_price * child_discount) * num_children
-        total_price = adults_price + children_price
+        total_price = calculate_total_price(package, num_adults, num_children, child_discount)
 
         # Save booking with pending payment
         booking = Booking.objects.create(
@@ -200,7 +143,7 @@ def booking_handler_view(request, package_id):
                 # Redirect the user to the payment URL
                 booking.payment_status = 'Paid'
                 booking.save()
-                send_confirmation_email(name, email, package.name, total_price)
+                send_confirmation_email.apply_async(args=[name, email, package.name, total_price])
                 generate_pdf_invoice.delay(booking.id) 
                 return HttpResponseRedirect(payment_url)
             else:
@@ -211,7 +154,7 @@ def booking_handler_view(request, package_id):
         # Return a response or redirect to a confirmation page
         # Redirect to the success page
         print(f"Booking mail ok: {booking.id}")
-        #send_confirmation_email(name, email, package.name, total_price)
+        send_confirmation_email.apply_async(args=[name, email, package.name, total_price])
         generate_pdf_invoice.apply_async(args=[booking.id]) 
         return redirect(reverse('booking_success'))  # Replace 'success_page' with the actual URL name for the success page
 
@@ -261,44 +204,67 @@ def generate_flouci_payment(amount):
         return None
 
 
-def personalized_recommendations(request):
-    # Get the current user (or booking-related context)
-    current_user = request.user  # You may want to adjust this part if you have user accounts
+# Function to display recommended packages
+def packages_recommendations(request):
+    # Call the Celery task asynchronously
+    task = top_recommendations.apply_async(args=[request.user.id])
     
-    # Get the latest booking for the user (assuming booking is associated with the user somehow)
-    latest_booking = Booking.objects.filter(email=current_user.email).last()
-
-    if not latest_booking:
-        # If no booking is found for the user, show a general message or recommendations
-        packages = TravelPackage.objects.all().order_by('-rating')[:3]  # Top 3 by rating
-        return render(request, 'recommendations.html', {'packages': packages})
+    # Create an AsyncResult object to check the status of the task
+    result = AsyncResult(task.id)
     
-    # Extract user's preferences (gender and rating)
-    gender_preference = latest_booking.gender
-    user_rating = latest_booking.package.rating  # Assuming the user is interested in similar ratings
+    # Check if the task has finished
+    if result.ready():
+        # If task is ready, get the result (list of recommended package IDs)
+        recommended_package_ids = result.result
+        
+        # Ensure that the result is a list of IDs
+        if isinstance(recommended_package_ids, list):
+            recommended_packages = TravelPackage.objects.filter(id__in=recommended_package_ids)
+            return render(request, 'recommendations.html', {'packages': recommended_packages})
+        else:
+            # Handle case where result is not a list (error in task)
+            return HttpResponse("Error: Task result is not a list of package IDs.")
     
-    # Now let's build a personalized recommendation list based on gender and package rating
-    gender_based_filter = Q()
-    if gender_preference == 'Male':
-        gender_based_filter = Q(package_type__in=['Adventure', 'Beach', 'Cultural'])  # Example for male preferences
-    elif gender_preference == 'Female':
-        gender_based_filter = Q(package_type__in=['Family', 'Relaxation', 'Cultural'])  # Example for female preferences
-    
-    # Calculate top 3 recommended packages based on rating and gender preference
-    recommendations = TravelPackage.objects.filter(gender_based_filter).order_by('-rating')
-
-    # Let's consider user rating in the mix
-    # We'll consider all packages with a rating greater than or equal to the user's previous package rating
-    recommendations = recommendations.filter(rating__gte=user_rating).order_by('-rating')[:3]  # Top 3
-
-    # Return top 3 recommended packages
-    return render(request, 'recommendations.html', {'packages': recommendations})
+    else:
+        # If the task is still processing, return a loading page or message
+        return render(request, 'loading.html')  # Loading page until task finishes
 
 
 def booking_success(request):
     return render(request, 'booking_success.html')  # success.html is the success page template
 
 
-
 def booking_fail(request):
     return render(request, 'booking_fail.html')  # success.html is the success page template
+
+
+# Tag CRUD views
+def tag_list(request):
+    tags = Tag.objects.all()
+    return render(request, 'tag_list.html', {'tags': tags})
+
+def tag_create(request):
+    if request.method == 'POST':
+        form = TagForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('tag_list')
+    else:
+        form = TagForm()
+    return render(request, 'tag_form.html', {'form': form})
+
+def tag_update(request, pk):
+    tag = get_object_or_404(Tag, pk=pk)
+    if request.method == 'POST':
+        form = TagForm(request.POST, instance=tag)
+        if form.is_valid():
+            form.save()
+            return redirect('tag_list')
+    else:
+        form = TagForm(instance=tag)
+    return render(request, 'tag_form.html', {'form': form})
+
+def tag_delete(request, pk):
+    tag = get_object_or_404(Tag, pk=pk)
+    tag.delete()
+    return redirect('tag_list')
